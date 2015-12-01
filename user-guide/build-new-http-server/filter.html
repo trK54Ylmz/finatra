@@ -229,7 +229,7 @@
 <div></div>
 
 
-<h2><a class="anchor" name="request-scope">Request Scope</a></h2>
+<h2><a class="anchor" name="request-scope" href="#request-scope">Request Scope</a></h2>
 
 <hr />
 
@@ -356,7 +356,7 @@
 <div></div>
 
 
-<h3><a class="anchor" name="request-ctx">Using <code>com.twitter.finagle.http.Request#ctx</code></a></h3>
+<h3><a class="anchor" name="request-ctx" href="#request-ctx">Using <code>com.twitter.finagle.http.Request#ctx</code></a></h3>
 
 <p>However, recommend <em>not</em> seeding with a request-scope <code>Provider[T]</code> but instead using Finagle&rsquo;s <a href="https://github.com/twitter/finagle/blob/develop/finagle-http/src/main/scala/com/twitter/finagle/http/Request.scala#L33"><code>com.twitter.finagle.http.Request#ctx</code></a>. Internally, we generally use the <code>Request#ctx</code> over <code>Provider[T]</code> even though we use Guice extensively.</p>
 

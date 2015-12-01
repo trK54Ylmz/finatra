@@ -104,7 +104,7 @@
 
 <p>Note: the most up-to-date examples are located in the <a href="https://github.com/twitter/finatra/tree/master/examples"><code>finatra/examples</code></a> project.</p>
 
-<h2><a class="anchor" name="server-definition">Create a Server definition</a></h2>
+<h2><a class="anchor" name="server-definition" href="#server-definition">Create a Server definition</a></h2>
 
 <hr />
 
@@ -172,9 +172,9 @@
 
 <p>For more information, see the <a href="https://www.heroku.com/">Heroku</a> <a href="https://github.com/twitter/finatra/tree/master/examples/hello-world-heroku">hello-world example</a>.</p>
 
-<h3><a class="anchor" name="override-defaults">Override Default Behavior</a></h3>
+<h3><a class="anchor" name="override-defaults" href="#override-defaults">Override Default Behavior</a></h3>
 
-<h4><a class="anchor" name="setting-flags-from-code">Flags</a></h4>
+<h4><a class="anchor" name="setting-flags-from-code" href="#setting-flags-from-code">Flags</a></h4>
 
 <p>Some deployment environments may make it difficult to set command line flags. If this is the case, Finatra&rsquo;s <a href="https://github.com/twitter/finatra/blob/master/http/src/main/scala/com/twitter/finatra/http/HttpServer.scala">HttpServer</a>&rsquo;s core flags can be set from code.
 For example, instead of setting the <code>-maxRequestSize</code> flag, you can override the following method in your server.</p>
@@ -201,7 +201,7 @@ For example, instead of setting the <code>-maxRequestSize</code> flag, you can o
 <div></div>
 
 
-<h4><a class="anchor" name="default-modules">Framework Modules</a></h4>
+<h4><a class="anchor" name="default-modules" href="#default-modules">Framework Modules</a></h4>
 
 <p>You can override some of the modules provided by default in <a href="https://github.com/twitter/finatra/blob/master/http/src/main/scala/com/twitter/finatra/http/HttpServer.scala">HttpServer</a>. An example use-case would be to provide a custom Jackson module implementation in place of the default <a href="https://github.com/twitter/finatra/blob/master/jackson/src/main/scala/com/twitter/finatra/json/modules/FinatraJacksonModule.scala"><code>FinatraJacksonModule</code></a>. To do so you would override the <code>protected def jacksonModule</code> in your server.</p>
 
