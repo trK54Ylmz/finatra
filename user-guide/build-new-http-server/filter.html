@@ -358,7 +358,7 @@
 
 <h3><a class="anchor" name="request-ctx" href="#request-ctx">Using <code>com.twitter.finagle.http.Request#ctx</code></a></h3>
 
-<p>However, we recommend <em>not</em> seeding with a request-scope <code>Provider[T]</code> but instead using Finagle&rsquo;s <a href="https://github.com/twitter/finagle/blob/develop/finagle-http/src/main/scala/com/twitter/finagle/http/Request.scala#L33"><code>com.twitter.finagle.http.Request#ctx</code></a>. Internally, we generally use the <code>Request#ctx</code> over <code>Provider[T]</code> even though we use Guice extensively.</p>
+<p>Above we saw how to seed classes to the Finatra Request scope using a <code>javax.inject.Provider</code>. However, we recommend <em>not</em> seeding with a request-scope <code>Provider[T]</code> but instead using Finagle&rsquo;s <a href="https://github.com/twitter/finagle/blob/develop/finagle-http/src/main/scala/com/twitter/finagle/http/Request.scala#L33"><code>com.twitter.finagle.http.Request#ctx</code></a>. Internally, we generally use the <code>Request#ctx</code> over <code>Provider[T]</code> even though we use Guice extensively.</p>
 
 <p>To use the <code>Request#ctx</code> technique,</p>
 
