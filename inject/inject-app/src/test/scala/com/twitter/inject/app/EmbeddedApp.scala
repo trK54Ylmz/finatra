@@ -169,7 +169,8 @@ class EmbeddedApp(
   /* Private */
 
   private def runTwitterUtilAppMain() {
-    val allArgs = combineArgs()
+    // we call distinct here b/c port flag args can potentially be added multiple times
+    val allArgs = combineArgs().distinct
     info("Starting " + appName + " with args: " + allArgs.mkString(" "))
 
     _mainResult = mainRunnerFuturePool {
@@ -220,6 +221,6 @@ class EmbeddedApp(
 
       Thread.sleep(1000)
     }
-    throw new Exception(s"App: $appName failed to startup within $maxStartupTimeSeconds seconds.")
+    throw new StartupTimeoutException(s"App: $appName failed to startup within $maxStartupTimeSeconds seconds.")
   }
 }

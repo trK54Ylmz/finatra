@@ -7,7 +7,7 @@ junit_tests(name='scala',
     'finatra/http',
     'finatra/httpclient',
     'finatra/httpclient:test-deps',
-    'finatra/http/src/test/java',
+    'finatra/http/src/test/java:test-deps',
     'finatra/http/src/test/scala:test-deps',
     'finatra/inject/inject-server:test-deps',
     'util/util-core',
@@ -42,8 +42,8 @@ scala_library(name="test-deps",
     'finatra/http',
     'finatra/inject/inject-server:test-deps',
   ],
+  fatal_warnings=True,
   sources=globs(
-    'com/twitter/finatra/test/*.scala',
     'com/twitter/finatra/http/test/*.scala'
   ),
 )

@@ -36,13 +36,18 @@ class EmbeddedHttpServer(
     defaultRequestHeaders = defaultRequestHeaders,
     streamResponse = streamResponse,
     verbose = verbose,
+    disableTestLogging = disableTestLogging,
     maxStartupTimeSeconds = maxStartupTimeSeconds) {
+
+  def this(twitterServer: Ports) = {
+    this(twitterServer, clientFlags = Map())
+  }
 
   /* Overrides */
 
   override protected def logAppStartup() {
     super.logAppStartup()
-    info(s"ExternalHttp -> http://$externalHttpHostAndPort")
+    info(s"ExternalHttp   -> http://$externalHttpHostAndPort")
   }
 
   override protected def printNonEmptyResponseBody(response: Response): Unit = {
@@ -415,6 +420,13 @@ class EmbeddedHttpServer(
     secure: Option[Boolean] = None): Response = {
 
     jsonAwareHttpExecute(request, request.headerMap.toMap, suppress, andExpect, withLocation, withBody, withJsonBody, withJsonBodyNormalizer, withErrors, routeToAdminServer, secure = secure.getOrElse(defaultHttpSecure))
+  }
+
+  // Note: Added to support tests from Java code which would need to manually set all arguments with default values
+  def httpRequest(
+    request: Request): Response = {
+
+    httpRequest(request, suppress = false)
   }
 
   /* Private */

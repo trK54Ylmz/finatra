@@ -1,7 +1,9 @@
 package com.twitter.finatra.thrift.tests
 
 import com.twitter.finatra.thrift.modules.ClientIdWhitelistModule
-import com.twitter.finatra.thrift.{EmbeddedThriftServer, ThriftRouter, ThriftServer}
+import com.twitter.finatra.thrift.routing.ThriftRouter
+import com.twitter.finatra.thrift.tests.doeverything.controllers.DoNothingController
+import com.twitter.finatra.thrift.{EmbeddedThriftServer, ThriftServer}
 import com.twitter.inject.Test
 import com.twitter.inject.server.EmbeddedTwitterServer
 import com.twitter.util.NonFatal
@@ -13,8 +15,8 @@ class ThriftServerStartupFeatureTest extends Test {
       override val modules = Seq(ClientIdWhitelistModule)
 
       override def configureThrift(router: ThriftRouter): Unit = {
-        router.add[ConverterImpl](FilteredConverter.create)
-        router.add[ConverterImpl](FilteredConverter.create)
+        router.add[DoNothingController]
+        router.add[DoNothingController] // can't add two services
       }
     })
 
@@ -34,7 +36,7 @@ class ThriftServerStartupFeatureTest extends Test {
 
       override def configureThrift(router: ThriftRouter): Unit = {
         router
-          .add[ConverterImpl](FilteredConverter.create)
+          .add[DoNothingController]
       }
     })
 

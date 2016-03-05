@@ -1,11 +1,12 @@
 import sbt.Keys._
 import sbtunidoc.Plugin.UnidocKeys._
+import scala.language.reflectiveCalls
 import ScoverageSbtPlugin.ScoverageKeys._
 
 parallelExecution in ThisBuild := false
 
 lazy val aggregated = taskKey[Unit]("Print currently aggregated tasks under the root.")
-lazy val projectVersion = "2.1.2-SNAPSHOT"
+lazy val projectVersion = "2.1.5-SNAPSHOT"
 
 lazy val buildSettings = Seq(
   version := projectVersion,
@@ -23,14 +24,15 @@ lazy val versions = new {
   val suffix = if (branch == "master" || travisBranch == "master") "" else "-SNAPSHOT"
 
   // Use SNAPSHOT versions of Twitter libraries on non-master branches
-  val finagle = "6.30.0" + suffix
-  val scrooge = "4.2.0" + suffix
-  val twitterServer = "1.15.0" + suffix
-  val util = "6.29.0" + suffix
+  val finagle = "6.33.0" + suffix
+  val scrooge = "4.5.0" + suffix
+  val twitterServer = "1.18.0" + suffix
+  val util = "6.32.0" + suffix
 
   val commonsCodec = "1.9"
   val commonsFileupload = "1.3.1"
   val commonsIo = "2.4"
+  val commonsLang = "2.6"
   val grizzled = "1.0.2"
   val guava = "16.0.1"
   val guice = "4.0"
@@ -44,9 +46,10 @@ lazy val versions = new {
   val servletApi = "2.5"
   val snakeyaml = "1.12"
   val slf4j = "1.7.7"
+  val libThrift = "0.5.0-1"
 }
 
-lazy val compilerOptions = scalacOptions ++= Seq(
+lazy val scalaCompilerOptions = scalacOptions ++= Seq(
   "-deprecation",
   "-encoding", "UTF-8",
   "-feature",
@@ -55,12 +58,19 @@ lazy val compilerOptions = scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-unchecked",
   "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen"
+  "-Ywarn-numeric-widen",
+  "-Xlint"
 ) ++ (
   CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 11)) => Seq("-Ywarn-unused-import")
+    case Some((2, x)) if x >= 11 => Seq("-Ywarn-unused-import")
     case _ => Seq.empty
   }
+)
+
+lazy val javaCompilerOptions = javacOptions ++= Seq(
+  "-source", "1.7",
+  "-target", "1.7",
+  "-Xlint:unchecked"
 )
 
 lazy val baseSettings = Seq(
@@ -74,7 +84,8 @@ lazy val baseSettings = Seq(
     "Twitter Maven" at "https://maven.twttr.com",
     Resolver.sonatypeRepo("snapshots")
   ),
-  compilerOptions
+  scalaCompilerOptions,
+  javaCompilerOptions
 )
 
 lazy val publishSettings = Seq(
@@ -95,7 +106,7 @@ lazy val publishSettings = Seq(
   homepage := Some(url("https://github.com/twitter/finatra")),
   autoAPIMappings := true,
   apiURL := Some(url("https://twitter.github.io/finatra/docs/")),
-  pomExtra := (
+  pomExtra :=
     <scm>
       <url>git://github.com/twitter/finatra.git</url>
       <connection>scm:git://github.com/twitter/finatra.git</connection>
@@ -106,8 +117,7 @@ lazy val publishSettings = Seq(
         <name>Twitter Inc.</name>
         <url>https://www.twitter.com/</url>
       </developer>
-    </developers>
-  ),
+    </developers>,
   pomPostProcess := { (node: scala.xml.Node) =>
     val rule = new scala.xml.transform.RewriteRule {
       override def transform(n: scala.xml.Node): scala.xml.NodeSeq =
@@ -161,6 +171,7 @@ lazy val finatraModules = Seq(
   injectServer,
   injectThriftClient,
   injectThriftClientHttpMapper,
+  injectUtils,
   jackson,
   slf4j,
   thrift,
@@ -223,6 +234,7 @@ lazy val injectCore = (project in file("inject/inject-core")).
       "commons-io" % "commons-io" % versions.commonsIo,
       "javax.inject" % "javax.inject" % "1",
       "joda-time" % "joda-time" % versions.jodaTime,
+      "com.github.nscala-time" %% "nscala-time" % versions.nscalaTime,
       "net.codingwell" %% "scala-guice" % versions.scalaGuice,
       "org.clapper" %% "grizzled-slf4j" % versions.grizzled,
       "org.joda" % "joda-convert" % versions.jodaConvert,
@@ -274,7 +286,9 @@ lazy val injectServer = (project in file("inject/inject-server")).
     injectApp,
     injectApp % "test->test",
     injectModules,
-    injectModules % "test->test"
+    injectModules % "test->test",
+    injectUtils,
+    slf4j
   )
 
 lazy val injectRequestScope = (project in file("inject/inject-request-scope")).
@@ -307,10 +321,25 @@ lazy val injectThriftClient = (project in file("inject/inject-thrift-client")).
   ).
   dependsOn(
     injectCore,
+    injectUtils,
     injectCore % "test->test",
     injectApp % "test->test",
     http % "test->test",
     thrift % "test->test"
+  )
+
+lazy val injectUtils = (project in file("inject/inject-utils")).
+  settings(injectBuildSettings).
+  settings(
+    name := "inject-utils",
+    moduleName := "inject-utils",
+    libraryDependencies ++= Seq(
+      "commons-lang" % "commons-lang" % versions.commonsLang
+    )
+  ).
+  dependsOn(
+    injectCore,
+    injectCore % "test->test"
   )
 
 // Can run in the SBT console in this project with `> run -wi 20 -i 10 -f 1 .*`.
@@ -327,6 +356,7 @@ lazy val benchmarks = project.
   ).
   dependsOn(
     http,
+    injectRequestScope,
     injectCore % "test->test"
   )
 
@@ -343,14 +373,16 @@ lazy val utils = project.
       "com.twitter" %% "finagle-http" % versions.finagle,
       "commons-io" % "commons-io" % versions.commonsIo,
       "joda-time" % "joda-time" % versions.jodaTime,
+      "org.apache.thrift" % "libthrift" % versions.libThrift,
       "org.clapper" %% "grizzled-slf4j" % versions.grizzled,
       "org.joda" % "joda-convert" % versions.jodaConvert
     )
   ).
   dependsOn(
-    injectRequestScope,
-    injectServer,
-    injectServer % "test->test"
+    injectApp % "test->test",
+    injectCore % "test->test",
+    injectServer % "test->test",
+    injectUtils
   )
 
 lazy val jackson = project.
@@ -390,6 +422,8 @@ lazy val http = project.
   ).
   dependsOn(
     jackson,
+    injectRequestScope,
+    injectServer,
     httpclient % "test->test",
     jackson % "test->test",
     injectServer % "test->test"
@@ -423,7 +457,6 @@ lazy val slf4j = project.
     )
   ).
   dependsOn(
-    http % "test->test",
     injectCore,
     injectCore % "test->test"
   )
@@ -444,8 +477,8 @@ lazy val thrift = project.
   ).
   dependsOn(
     injectServer,
-    injectServer % "test->test",
-    slf4j % "test->test"
+    utils,
+    injectServer % "test->test"
   )
 
 lazy val injectThriftClientHttpMapper = (project in file("inject-thrift-client-http-mapper")).
@@ -572,7 +605,7 @@ lazy val tinyUrl = (project in file("examples/tiny-url")).
     injectCore % "test->test"
   )
 
-lazy val exampleInjectJavaServer = (project in file("inject/examples/java-server")).
+lazy val exampleInjectJavaServer = (project in file("examples/java-server")).
   settings(exampleServerBuildSettings).
   settings(
     name := "java-server",

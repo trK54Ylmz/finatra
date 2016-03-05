@@ -31,7 +31,7 @@ class EmbeddedThriftServer(
   stage: Stage = Stage.DEVELOPMENT,
   useSocksProxy: Boolean = false,
   skipAppMain: Boolean = false,
-  thriftPortFlag: String = "thrift.port",
+  override val thriftPortFlag: String = "thrift.port",
   verbose: Boolean = false,
   disableTestLogging: Boolean = false,
   maxStartupTimeSeconds: Int = 60)
@@ -44,13 +44,11 @@ class EmbeddedThriftServer(
     useSocksProxy,
     skipAppMain,
     verbose = verbose,
+    disableTestLogging = disableTestLogging,
     maxStartupTimeSeconds = maxStartupTimeSeconds)
   with ThriftClient {
 
-  protected def externalHostAndPort = {
-    start()
-    Some(loopbackAddressForPort(thriftExternalPort))
-  }
+  /* Public */
 
   def thriftPort: Int = {
     start()
@@ -59,9 +57,5 @@ class EmbeddedThriftServer(
 
   def thriftHostAndPort: String = {
     PortUtils.loopbackAddressForPort(thriftPort)
-  }
-
-  override protected def combineArgs(): Array[String] = {
-    ("-thrift.port=" + PortUtils.ephemeralLoopback) +: super.combineArgs
   }
 }

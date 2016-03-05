@@ -11,10 +11,12 @@ scala_library(name='scala',
     'finagle/finagle-core',
     'finagle/finagle-thrift',
     'finagle/finagle-thriftmux',
-    'finatra/inject/inject-core',
+    'finatra/inject/inject-app',
+    'finatra/inject/inject-utils',
     'scrooge/scrooge-core',
     'util/util-core',
   ],
+  fatal_warnings=True,
   sources=rglobs('*.scala'),
   java_sources=[
     'finatra/inject/inject-thrift-client/src/main/java'

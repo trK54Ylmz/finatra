@@ -1,8 +1,64 @@
 # Change Log
 
-## [Unreleased](https://github.com/twitter/finatra/tree/HEAD)
+## [v2.1.4](https://github.com/twitter/finatra/tree/v2.1.4) (2016-02-25)
 
-[Full Changelog](https://github.com/twitter/finatra/compare/v2.1.0...HEAD)
+[Full Changelog](https://github.com/twitter/finatra/compare/v2.1.3...2.1.4)
+
+**Fixed bugs:**
+
+- Some Scaladoc links are broken on twitter.github.io/finatra [\#298](https://github.com/twitter/finatra/issues/298)
+
+**Closed issues:**
+
+- LoggingMDCFilter lacks documentation [\#303](https://github.com/twitter/finatra/issues/303)
+
+- bug in finatra/examples/hello-world/src/main/resources/logback.xml [\#289](https://github.com/twitter/finatra/issues/289)
+
+- Improve error message when @Header field is missing [\#263](https://github.com/twitter/finatra/issues/263)
+
+## [v2.1.3](https://github.com/twitter/finatra/tree/v2.1.3) (2016-02-05)
+
+[Full Changelog](https://github.com/twitter/finatra/compare/v2.1.2...v2.1.3)
+
+**Closed issues:**
+
+- Is it possible to have different modules listen in different ports? [\#295](https://github.com/twitter/finatra/issues/295)
+
+- Asynchronous method validations [\#292](https://github.com/twitter/finatra/issues/292)
+
+- if the Cookie contain version='' ,can't get the request.cookies [\#290](https://github.com/twitter/finatra/issues/290)
+
+- Failed to auto configure default logger context [\#288](https://github.com/twitter/finatra/issues/288)
+
+- Inject properties [\#287](https://github.com/twitter/finatra/issues/287)
+
+- sbt compile error on master [\#284](https://github.com/twitter/finatra/issues/284)
+
+- Optionally announce server location on startup [\#241](https://github.com/twitter/finatra/issues/241)
+
+## [v2.1.2](https://github.com/twitter/finatra/tree/v2.1.2) (2015-12-09)
+
+[Full Changelog](https://github.com/twitter/finatra/compare/v2.1.1...v2.1.2)
+
+**Fixed bugs:**
+
+- Missing Scaladoc [\#279](https://github.com/twitter/finatra/issues/279)
+
+**Closed issues:**
+
+- Finatra + Protobuf [\#277](https://github.com/twitter/finatra/issues/277)
+
+- Simple hello-world example does not compiled [\#274](https://github.com/twitter/finatra/issues/274)
+
+- Allow overriding of the http service name [\#270](https://github.com/twitter/finatra/issues/270)
+
+- Bump to latest finagle? [\#266](https://github.com/twitter/finatra/issues/266)
+
+- ClassCastException: com.twitter.finatra.logging.FinagleMDCAdapter cannot be cast to ch.qos.logback.classic.util.LogbackMDCAdapter [\#256](https://github.com/twitter/finatra/issues/256)
+
+## [v2.1.1](https://github.com/twitter/finatra/tree/v2.1.1) (2015-10-29)
+
+[Full Changelog](https://github.com/twitter/finatra/compare/v2.1.0...v2.1.1)
 
 **Closed issues:**
 
@@ -18,7 +74,7 @@
 
 **Merged pull requests:**
 
-- Remove unnecessary files [\#265](https://github.com/twitter/finatra/pull/265) ([cacoco](https://github.com/cacoco))
+- Remove unneccesary files [\#265](https://github.com/twitter/finatra/pull/265) ([cacoco](https://github.com/cacoco))
 
 ## [v2.1.0](https://github.com/twitter/finatra/tree/v2.1.0) (2015-10-01)
 

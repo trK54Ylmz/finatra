@@ -3,7 +3,7 @@ package com.twitter.finatra.http.internal.routing
 import com.twitter.finagle.{Filter, Service}
 import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.finatra.http.contexts.RouteInfo
-import com.twitter.finatra.http.internal.request.RequestWithPathParams
+import com.twitter.finatra.http.internal.request.RequestWithRouteParams
 import com.twitter.util.Future
 import java.lang.annotation.Annotation
 import scala.language.existentials
@@ -17,17 +17,13 @@ case class Route(
   annotations: Seq[Annotation] = Seq(),
   requestClass: Class[_],
   responseClass: Class[_],
-  filter: Filter[Request, Response, Request, Response] = null) {
+  filter: Filter[Request, Response, Request, Response]) {
 
   private[this] val pattern = PathPattern(path)
   private[this] val routeInfo = RouteInfo(name, path)
 
-  private[this] val filteredCallback: Request => Future[Response] = {
-    if (filter != null)
-      filter andThen Service.mk[Request, Response](callback)
-    else
-      callback
-  }
+  private[this] val filteredCallback: Request => Future[Response] =
+    filter andThen Service.mk[Request, Response](callback)
 
   /* Public */
 
@@ -38,20 +34,20 @@ case class Route(
   def summary: String = f"$method%-7s $path"
 
   def withFilter(filter: Filter[Request, Response, Request, Response]): Route = {
-    this.copy(filter = filter)
+    this.copy(filter = filter andThen this.filter)
   }
 
   // Note: incomingPath is an optimization to avoid calling incomingRequest.path for every potential route
   def handle(incomingRequest: Request, incomingPath: String): Option[Future[Response]] = {
-    val pathParamsOpt = pattern.extract(incomingPath)
-    if (pathParamsOpt.isEmpty) {
+    val routeParamsOpt = pattern.extract(incomingPath)
+    if (routeParamsOpt.isEmpty) {
       None
     }
     else {
       handleMatch(
         createRequest(
           incomingRequest,
-          pathParamsOpt.get))
+          routeParamsOpt.get))
     }
   }
 
@@ -63,10 +59,10 @@ case class Route(
 
   /* Private */
 
-  private[this] def createRequest(request: Request, pathParams: Map[String, String]) = {
-    if (pathParams.isEmpty)
+  private[this] def createRequest(request: Request, routeParams: Map[String, String]) = {
+    if (routeParams.isEmpty)
       request
     else
-      new RequestWithPathParams(request, pathParams)
+      new RequestWithRouteParams(request, routeParams)
   }
 }

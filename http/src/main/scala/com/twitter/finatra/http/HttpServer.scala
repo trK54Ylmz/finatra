@@ -7,8 +7,6 @@ import com.twitter.finatra.http.internal.server.BaseHttpServer
 import com.twitter.finatra.http.modules.{AccessLogModule, DocRootModule, ExceptionMapperModule, MessageBodyModule, MustacheModule}
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.finatra.json.modules.FinatraJacksonModule
-import com.twitter.finatra.routing.Router
-import com.twitter.finatra.utils.Handler
 
 trait HttpServer extends BaseHttpServer {
 
@@ -22,20 +20,16 @@ trait HttpServer extends BaseHttpServer {
 
   /* Abstract */
 
-  @deprecated("use configureHttp", "since 2-22-2015")
-  protected def configure(router: Router) {
-  }
-
-  protected def configureHttp(router: HttpRouter) {
-  }
+  protected def configureHttp(router: HttpRouter): Unit
 
   /* Overrides */
+
+  override protected def failfastOnFlagsNotParsed = true
 
   override protected def postStartup() {
     super.postStartup()
     val httpRouter = injector.instance[HttpRouter]
     configureHttp(httpRouter)
-    configure(httpRouter)
   }
 
   override def httpService: Service[Request, Response] = {
@@ -52,9 +46,6 @@ trait HttpServer extends BaseHttpServer {
       router.services.adminService)
   }
 
-  protected def run[T <: Handler : Manifest]() {
-    injector.instance[T].handle()
-  }
 
   //Note: After upgrading to Guice v4, replace the need for these protected methods with OptionalBinder
   //http://google.github.io/guice/api-docs/latest/javadoc/com/google/inject/multibindings/OptionalBinder.html

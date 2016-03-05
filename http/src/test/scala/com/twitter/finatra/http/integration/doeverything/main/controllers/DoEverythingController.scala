@@ -7,14 +7,15 @@ import com.twitter.finatra.http.Controller
 import com.twitter.finatra.http.exceptions._
 import com.twitter.finatra.http.integration.doeverything.main.domain._
 import com.twitter.finatra.http.integration.doeverything.main.exceptions._
-import com.twitter.finatra.http.integration.doeverything.main.filters.{AppendToHeaderFilter, ForbiddenFilter}
+import com.twitter.finatra.http.integration.doeverything.main.filters.ForbiddenFilter
 import com.twitter.finatra.http.integration.doeverything.main.services.{ComplexServiceFactory, DoEverythingService, MultiService}
 import com.twitter.finatra.http.marshalling.mustache.MustacheService
 import com.twitter.finatra.http.request.RequestUtils
 import com.twitter.finatra.http.response._
 import com.twitter.finatra.json.FinatraObjectMapper
-import com.twitter.finatra.request.{QueryParam, RequestInject, RouteParam}
+import com.twitter.finatra.request.{QueryParam, RouteParam}
 import com.twitter.util.Future
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import scala.collection.SortedSet
@@ -591,14 +592,6 @@ class DoEverythingController @Inject()(
     "ok!"
   }
 
-  filter(new AppendToHeaderFilter("test", "a")).
-    filter(new AppendToHeaderFilter("test", "b")).
-    filter(new AppendToHeaderFilter("test", "c")).
-    get("/multipleRouteFilters") { r: Request =>
-
-    r.headerMap("test")
-  }
-
   get("/testClassWithHtml") { r: Request =>
     val testUser = TestUserView(
       28,
@@ -610,11 +603,23 @@ class DoEverythingController @Inject()(
       phone = "+12221234567",
       renderedHtml = xml.Utility.escape(mustacheService.createString("testHtml.mustache", testUser)))
   }
+
+  get("/non_case_class") { r: Request =>
+    new NonCaseClass
+  }
+
+  get("/bytes") { r: Request =>
+    "Steve".getBytes(StandardCharsets.UTF_8)
+  }
 }
 
 case class MultipleInjectableValueParams(
   @RouteParam @QueryParam id: String)
 
 case class CaseClassWithRequestField(
-  @RequestInject request: Request)
+  @Inject request: Request)
 
+class NonCaseClass {
+  val name = "Bob"
+  val age = 21
+}

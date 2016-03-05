@@ -11,15 +11,14 @@ import com.twitter.finagle.service.RetryPolicy._
 import com.twitter.finagle.stats.{InMemoryStatsReceiver, NullStatsReceiver, StatsReceiver}
 import com.twitter.finagle.{ListeningServer, ChannelClosedException, Service}
 import com.twitter.inject.app.{App, EmbeddedApp}
+import com.twitter.inject.conversions.map._
 import com.twitter.inject.modules.InMemoryStatsReceiverModule
 import com.twitter.inject.server.EmbeddedTwitterServer._
 import com.twitter.inject.server.PortUtils._
-import com.twitter.server.AdminHttpServer
 import com.twitter.util._
 import java.net.{InetSocketAddress, URI}
 import java.util.concurrent.TimeUnit._
 import org.apache.commons.lang.reflect.FieldUtils
-import scala.collection.immutable.SortedMap
 
 object EmbeddedTwitterServer {
   private def resolveClientFlags(useSocksProxy: Boolean, clientFlags: Map[String, String]) = {
@@ -80,6 +79,7 @@ class EmbeddedTwitterServer(
     skipAppMain = skipAppMain,
     stage = stage,
     verbose = verbose,
+    disableTestLogging = disableTestLogging,
     maxStartupTimeSeconds = maxStartupTimeSeconds) {
 
   /* Additional Constructors */
@@ -116,7 +116,7 @@ class EmbeddedTwitterServer(
 
   override protected def logAppStartup() {
     infoBanner("Server Started: " + appName)
-    info(s"AdminHttp    -> http://$adminHostAndPort/admin")
+    info(s"AdminHttp      -> http://$adminHostAndPort/admin")
   }
 
   override protected def updateClientFlags(map: Map[String, String]) = {
@@ -252,10 +252,17 @@ class EmbeddedTwitterServer(
     start()
 
     /* Pre - Execute */
+
+    /* Don't overwrite request.headers potentially in given request */
+    val defaultHeaders = defaultRequestHeaders filterKeys { !request.headerMap.contains(_) }
+    addOrRemoveHeaders(request, defaultHeaders)
+    // headers added last so they can overwrite "defaults"
+    addOrRemoveHeaders(request, headers)
+
     printRequest(request, suppress)
 
     /* Execute */
-    val response = handleRequest(request, client = client, additionalHeaders = headers)
+    val response = handleRequest(request, client = client)
 
     /* Post - Execute */
     printResponseMetadata(response, suppress)
@@ -341,13 +348,7 @@ class EmbeddedTwitterServer(
 
   private def handleRequest(
     request: Request,
-    client: Service[Request, Response],
-    additionalHeaders: Map[String, String] = Map()): Response = {
-
-    // Don't overwrite request.headers set by RequestBuilder in httpFormPost.
-    val defaultNewHeaders = defaultRequestHeaders filterKeys { !request.headerMap.contains(_) }
-    addOrRemoveHeaders(request, defaultNewHeaders)
-    addOrRemoveHeaders(request, additionalHeaders) //additional headers get added second so they can overwrite defaults
+    client: Service[Request, Response]): Response = {
 
     val futureResponse = client(request)
     val elapsed = Stopwatch.start()
@@ -430,19 +431,6 @@ class EmbeddedTwitterServer(
         andExpect = Status.Ok,
         withBody = expectedBody,
         suppress = !verbose)
-    }
-  }
-
-  //TODO: AF-567: Create inject-utils
-  implicit class RichMap[K, V](wrappedMap: Map[K, V]) {
-    def mapKeys[T](func: K => T): Map[T, V] = {
-      for ((k, v) <- wrappedMap) yield {
-        func(k) -> v
-      }
-    }
-
-    def toSortedMap(implicit ordering: Ordering[K]) = {
-      SortedMap[K, V]() ++ wrappedMap
     }
   }
 }
